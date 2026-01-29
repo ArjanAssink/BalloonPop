@@ -14,11 +14,15 @@
     <div class="stars" id="stars"></div>
     
     <div class="start-screen" id="startScreen">
-        <h1>🎈 Balloon Pop Quiz 🎈</h1>
-        <p>Use hand gestures to pop the correct balloon! Point at the right answer to win.</p>
-        <button class="start-btn" id="startBtn">Play</button>
+        <h1>🎈 Ballonnen Plop Quiz 🎈</h1>
+        <p>Kies een spelmodus om te oefenen!</p>
+        <div class="game-mode-buttons">
+            <button class="start-btn" onclick="startGameWithSet('math')">🔢 Oefen Rekensommen</button>
+            <button class="start-btn" onclick="startGameWithSet('letters')">🔤 Oefen Lettergeluiden</button>
+            <button class="start-btn" onclick="startGameWithSet('general')">🎯 Algemene Kennis</button>
+        </div>
         <div class="loading" id="loading" style="display: none;">
-            Loading camera and hand tracking<span class="spinner"></span>
+            Camera en handherkenning laden<span class="spinner"></span>
         </div>
     </div>
     

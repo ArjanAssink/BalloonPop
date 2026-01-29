@@ -8,39 +8,173 @@ let gameState = {
     handDetected: false
 };
 
-// Questions database
-const questions = [
-    {
-        question: "What is 5 + 7?",
-        answers: ["10", "12", "14", "15"],
-        correct: 1
-    },
-    {
-        question: "Capital of France?",
-        answers: ["London", "Berlin", "Paris", "Rome"],
-        correct: 2
-    },
-    {
-        question: "How many days in a week?",
-        answers: ["5", "6", "7", "8"],
-        correct: 2
-    },
-    {
-        question: "What color is the sky?",
-        answers: ["Green", "Blue", "Red", "Yellow"],
-        correct: 1
-    },
-    {
-        question: "What is 10 - 3?",
-        answers: ["5", "6", "7", "8"],
-        correct: 2
-    },
-    {
-        question: "Largest ocean?",
-        answers: ["Atlantic", "Pacific", "Indian", "Arctic"],
-        correct: 1
-    }
-];
+// Question sets database (Dutch)
+const questionSets = {
+    math: [
+        {
+            question: "Wat is 1 + 1?",
+            answers: ["1", "2", "3", "4"],
+            correct: 1
+        },
+        {
+            question: "Wat is 2 + 3?",
+            answers: ["4", "5", "6", "7"],
+            correct: 1
+        },
+        {
+            question: "Wat is 5 - 2?",
+            answers: ["2", "3", "4", "1"],
+            correct: 1
+        },
+        {
+            question: "Wat is 3 + 4?",
+            answers: ["5", "6", "7", "8"],
+            correct: 2
+        },
+        {
+            question: "Wat is 10 - 5?",
+            answers: ["3", "4", "5", "6"],
+            correct: 2
+        },
+        {
+            question: "Wat is 2 + 2?",
+            answers: ["3", "4", "5", "6"],
+            correct: 1
+        },
+        {
+            question: "Wat is 7 - 3?",
+            answers: ["3", "4", "5", "6"],
+            correct: 1
+        },
+        {
+            question: "Wat is 1 + 4?",
+            answers: ["3", "4", "5", "6"],
+            correct: 1
+        },
+        {
+            question: "Wat is 6 - 1?",
+            answers: ["4", "5", "6", "3"],
+            correct: 1
+        },
+        {
+            question: "Wat is 3 + 3?",
+            answers: ["5", "6", "7", "8"],
+            correct: 1
+        }
+    ],
+    letters: [
+        {
+            question: "Welke letter maakt het 'A' geluid?",
+            answers: ["B", "A", "C", "D"],
+            correct: 1
+        },
+        {
+            question: "Welke letter maakt het 'B' geluid?",
+            answers: ["A", "B", "C", "D"],
+            correct: 1
+        },
+        {
+            question: "Welke letter maakt het 'M' geluid?",
+            answers: ["N", "M", "W", "P"],
+            correct: 1
+        },
+        {
+            question: "Welke letter maakt het 'S' geluid?",
+            answers: ["Z", "S", "C", "X"],
+            correct: 1
+        },
+        {
+            question: "Welke letter maakt het 'T' geluid?",
+            answers: ["D", "T", "P", "B"],
+            correct: 1
+        },
+        {
+            question: "Welke letter maakt het 'K' geluid?",
+            answers: ["C", "K", "Q", "X"],
+            correct: 1
+        }
+    ],
+    general: [
+        {
+            question: "Wat is 5 + 7?",
+            answers: ["10", "12", "14", "15"],
+            correct: 1
+        },
+        {
+            question: "Hoofdstad van Frankrijk?",
+            answers: ["Londen", "Berlijn", "Parijs", "Rome"],
+            correct: 2
+        },
+        {
+            question: "Hoeveel dagen in een week?",
+            answers: ["5", "6", "7", "8"],
+            correct: 2
+        },
+        {
+            question: "Welke kleur is de lucht?",
+            answers: ["Groen", "Blauw", "Rood", "Geel"],
+            correct: 1
+        },
+        {
+            question: "Wat is 10 - 3?",
+            answers: ["5", "6", "7", "8"],
+            correct: 2
+        },
+        {
+            question: "Grootste oceaan?",
+            answers: ["Atlantisch", "Stille", "Indisch", "Arctisch"],
+            correct: 1
+        },
+        {
+            question: "Welk dier zegt 'miauw'?",
+            answers: ["Hond", "Kat", "Koe", "Varken"],
+            correct: 1
+        },
+        {
+            question: "Hoeveel poten heeft een spin?",
+            answers: ["4", "6", "8", "10"],
+            correct: 2
+        },
+        {
+            question: "Welke vorm heeft een voetbal?",
+            answers: ["Vierkant", "Driehoek", "Rond", "Ovaal"],
+            correct: 2
+        },
+        {
+            question: "Wat is de kleur van een banaan?",
+            answers: ["Rood", "Blauw", "Geel", "Groen"],
+            correct: 2
+        },
+        {
+            question: "Hoeveel seizoenen zijn er in een jaar?",
+            answers: ["2", "4", "6", "8"],
+            correct: 1
+        },
+        {
+            question: "Welk dier is het grootste?",
+            answers: ["Olifant", "Giraffe", "Walvis", "Leeuw"],
+            correct: 2
+        },
+        {
+            question: "Wat gebruik je om te schrijven?",
+            answers: ["Boek", "Pen", "Gum", "Liniaal"],
+            correct: 1
+        },
+        {
+            question: "Hoeveel maanden heeft een jaar?",
+            answers: ["6", "10", "12", "14"],
+            correct: 2
+        },
+        {
+            question: "Welke planeet wonen wij op?",
+            answers: ["Mars", "Aarde", "Jupiter", "Venus"],
+            correct: 1
+        }
+    ]
+};
+
+// Default question set
+let currentQuestionSet = 'general';
 
 // Balloon colors
 const balloonColors = ['#ff407a', '#4da6ff', '#ffd740', '#9c27b0', '#4caf50'];
@@ -321,7 +455,8 @@ async function initializeHandTracking() {
         videoPreview.style.display = 'block';
         
         loading.style.display = 'none';
-        startGame(true); // true = gesture mode
+        // Game is already started in startGameWithSet(), just need to load the first question
+        loadQuestion();
     } catch (error) {
         console.error('Error initializing hand tracking:', error);
         loading.style.display = 'none';
@@ -416,12 +551,12 @@ function startGame(useGestures = false) {
 }
 
 function loadQuestion() {
-    if (gameState.currentQuestion >= questions.length) {
+    if (gameState.currentQuestion >= questionSets[currentQuestionSet].length) {
         endGame();
         return;
     }
     
-    const q = questions[gameState.currentQuestion];
+    const q = questionSets[currentQuestionSet][gameState.currentQuestion];
     questionBox.textContent = q.question;
     
     // Clear old balloons
@@ -530,6 +665,39 @@ function endGame() {
         <button class="start-btn" onclick="location.reload()">Play Again</button>
     `;
     document.body.appendChild(gameOver);
+}
+
+// Function to start game with specific question set
+window.startGameWithSet = function(setName) {
+    currentQuestionSet = setName;
+    
+    // Hide the start screen
+    const startScreen = document.getElementById('startScreen');
+    if (startScreen) {
+        startScreen.style.display = 'none';
+    }
+    
+    // Show the game container
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.style.display = 'block';
+    }
+    
+    // Set canvas size
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    
+    // Start the game directly with gesture mode
+    gameState.isPlaying = true;
+    gameState.score = 0;
+    gameState.currentQuestion = 0;
+    gameState.useGestures = true;
+    
+    // Initialize camera and hand tracking
+    initializeHandTracking();
 }
 
 // Start button
