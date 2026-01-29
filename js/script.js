@@ -5,7 +5,19 @@ let gameState = {
     isPlaying: false,
     handX: 0,
     handY: 0,
-    handDetected: false
+    handDetected: false,
+    gameMode: 'quiz', // 'quiz' or 'balloonDrop'
+    balloonDrop: {
+        balloons: [],
+        spawnInterval: 2000, // Start with 2 seconds between balloons
+        minSpawnInterval: 500, // Minimum 0.5 seconds between balloons
+        speed: 1, // Base speed
+        maxSpeed: 5, // Maximum speed
+        difficultyIncrease: 0.95, // Reduce interval by 5% each time
+        gameDuration: 60000, // 60 seconds
+        startTime: 0,
+        lastSpawnTime: 0
+    }
 };
 
 // Question sets database (Dutch)
@@ -278,6 +290,48 @@ function createFartSound() {
     noiseSource.stop(audioCtx.currentTime + 0.7);
 }
 
+// Sound for good pop (balloon pop)
+function createGoodPopSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+    oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.3);
+}
+
+// Sound for bad pop (balloon hitting bottom)
+function createBadPopSound() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+    oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+    
+    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.3);
+}
+
 // Elements
 const startScreen = document.getElementById('startScreen');
 const startBtn = document.getElementById('startBtn');
@@ -396,6 +450,10 @@ function playSound(type) {
             createApplauseSound();
         } else if (type === 'fart') {
             createFartSound();
+        } else if (type === 'goodPop') {
+            createGoodPopSound();
+        } else if (type === 'badPop') {
+            createBadPopSound();
         }
     } catch (error) {
         console.log('Sound playback error:', error);
@@ -500,8 +558,11 @@ function onHandResults(results) {
         handCursor.style.left = gameState.handX + 'px';
         handCursor.style.top = gameState.handY + 'px';
         
-        // Check for balloon collisions
-        checkBalloonCollisions();
+        // Check for balloon collisions based on game mode
+        if (gameState.gameMode === 'quiz') {
+            checkBalloonCollisions();
+        }
+        // Balloon drop mode uses its own handler (onBalloonDropHandResults)
     } else {
         gameState.handDetected = false;
         handCursor.style.display = 'none';
@@ -695,16 +756,325 @@ window.startGameWithSet = function(setName) {
     gameState.score = 0;
     gameState.currentQuestion = 0;
     gameState.useGestures = true;
+    gameState.gameMode = 'quiz';
     
     // Initialize camera and hand tracking
     initializeHandTracking();
 }
+
+// Expose balloon drop function to global scope
+window.startBalloonDropMode = startBalloonDropMode;
 
 // Start button
 startBtn.addEventListener('click', () => {
     startBtn.disabled = true;
     initializeHandTracking();
 });
+
+// Balloon Drop Game Functions
+
+function startBalloonDropMode() {
+    gameState.gameMode = 'balloonDrop';
+    gameState.score = 0;
+    gameState.isPlaying = true;
+    gameState.balloonDrop.balloons = [];
+    gameState.balloonDrop.spawnInterval = 2000;
+    gameState.balloonDrop.speed = 1;
+    gameState.balloonDrop.startTime = Date.now();
+    gameState.balloonDrop.lastSpawnTime = Date.now();
+
+    // Hide start screen, show game container
+    startScreen.style.display = 'none';
+    gameContainer.style.display = 'block';
+    
+    // Set canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Clear any existing balloons from quiz mode
+    balloonsContainer.innerHTML = '';
+    
+    // Hide question box for balloon drop mode
+    questionBox.style.display = 'none';
+    
+    // Create a separate instruction display
+    const instructionBox = document.createElement('div');
+    instructionBox.className = 'balloon-drop-instructions';
+    instructionBox.textContent = '🎈 Pop de ballonnen voordat ze de grond raken! 🎈';
+    
+    document.querySelector('.ui-overlay').appendChild(instructionBox);
+    
+    scoreDisplay.textContent = gameState.score;
+    
+    // Initialize camera and hand tracking for balloon drop (simplified version)
+    startBalloonDropHandTracking();
+    
+    // Start game loop
+    requestAnimationFrame(balloonDropGameLoop);
+}
+
+// Simplified hand tracking just for balloon drop mode
+function startBalloonDropHandTracking() {
+    loading.style.display = 'block';
+    loading.innerHTML = 'Camera en handherkenning laden<span class="spinner"></span>';
+    
+    try {
+        hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+        
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+        
+        hands.onResults(onBalloonDropHandResults);
+        
+        // Setup camera
+        camera = new Camera(videoPreview, {
+            onFrame: async () => {
+                await hands.send({image: videoPreview});
+            },
+            width: 1280,
+            height: 720
+        });
+        
+        camera.start().then(() => {
+            videoPreview.style.display = 'block';
+            loading.style.display = 'none';
+        });
+    } catch (error) {
+        console.error('Error initializing hand tracking:', error);
+        loading.style.display = 'none';
+    }
+}
+
+// Separate hand results handler for balloon drop mode
+function onBalloonDropHandResults(results) {
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+        const indexTip = landmarks[8];
+        
+        // Convert to screen coordinates
+        gameState.handX = (1 - indexTip.x) * window.innerWidth;
+        gameState.handY = indexTip.y * window.innerHeight;
+        gameState.handDetected = true;
+        
+        // Update cursor position
+        handCursor.style.display = 'block';
+        handCursor.style.left = gameState.handX + 'px';
+        handCursor.style.top = gameState.handY + 'px';
+        
+        // Check for balloon collisions
+        checkBalloonDropCollisions();
+    } else {
+        gameState.handDetected = false;
+        handCursor.style.display = 'none';
+    }
+    
+    ctx.restore();
+}
+
+function balloonDropGameLoop() {
+    if (!gameState.isPlaying || gameState.gameMode !== 'balloonDrop') return;
+    
+    const now = Date.now();
+    const elapsed = now - gameState.balloonDrop.startTime;
+    
+    // Update timer display
+    const remainingTime = Math.max(0, gameState.balloonDrop.gameDuration - elapsed);
+    const timerDisplay = document.getElementById('timer');
+    if (!timerDisplay) {
+        const timerElement = document.createElement('div');
+        timerElement.id = 'timer';
+        timerElement.className = 'timer-display';
+        timerElement.style.position = 'absolute';
+        timerElement.style.top = '20px';
+        timerElement.style.left = '20px';
+        timerElement.style.fontFamily = 'Space Mono, monospace';
+        timerElement.style.fontSize = '32px';
+        timerElement.style.fontWeight = '700';
+        timerElement.style.color = 'var(--accent)';
+        timerElement.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
+        timerElement.style.zIndex = '100';
+        timerElement.style.pointerEvents = 'none';
+        document.querySelector('.ui-overlay').appendChild(timerElement);
+    } else {
+        timerDisplay.textContent = `Tijd: ${Math.ceil(remainingTime / 1000)}s`;
+    }
+    
+    // Check if game time is up
+    if (elapsed >= gameState.balloonDrop.gameDuration) {
+        endBalloonDropGame();
+        return;
+    }
+    
+    // Spawn new balloons at intervals
+    if (now - gameState.balloonDrop.lastSpawnTime >= gameState.balloonDrop.spawnInterval) {
+        spawnBalloonDropBalloon();
+        gameState.balloonDrop.lastSpawnTime = now;
+        
+        // Increase difficulty - reduce spawn interval
+        gameState.balloonDrop.spawnInterval = Math.max(
+            gameState.balloonDrop.minSpawnInterval,
+            gameState.balloonDrop.spawnInterval * gameState.balloonDrop.difficultyIncrease
+        );
+    }
+    
+    // Update existing balloons
+    updateBalloonDropBalloons();
+    
+    // Continue game loop
+    requestAnimationFrame(balloonDropGameLoop);
+}
+
+function spawnBalloonDropBalloon() {
+    const balloon = {
+        id: Date.now() + Math.random(),
+        x: Math.random() * (window.innerWidth - 100),
+        y: -100, // Start above screen
+        width: 80 + Math.random() * 40, // Random size
+        height: 100 + Math.random() * 50,
+        speed: gameState.balloonDrop.speed + Math.random() * 2,
+        color: balloonColors[Math.floor(Math.random() * balloonColors.length)],
+        element: null
+    };
+    
+    // Create balloon element
+    const balloonElement = document.createElement('div');
+    balloonElement.className = 'balloon-drop';
+    balloonElement.style.left = balloon.x + 'px';
+    balloonElement.style.top = balloon.y + 'px';
+    balloonElement.style.width = balloon.width + 'px';
+    balloonElement.style.height = balloon.height + 'px';
+    balloonElement.dataset.id = balloon.id;
+    
+    // Create balloon body with proper styling
+    const balloonBody = document.createElement('div');
+    balloonBody.className = 'balloon-drop-body';
+    balloonBody.style.backgroundColor = balloon.color;
+    
+    // Create balloon string
+    const balloonString = document.createElement('div');
+    balloonString.className = 'balloon-drop-string';
+    
+    balloonElement.appendChild(balloonBody);
+    balloonElement.appendChild(balloonString);
+    
+    balloonsContainer.appendChild(balloonElement);
+    balloon.element = balloonElement;
+    
+    // Add click handler for touch/mouse
+    balloonElement.addEventListener('click', () => popBalloonDropBalloon(balloon));
+    
+    gameState.balloonDrop.balloons.push(balloon);
+}
+
+function updateBalloonDropBalloons() {
+    const now = Date.now();
+    const balloonsToRemove = [];
+    
+    gameState.balloonDrop.balloons.forEach((balloon, index) => {
+        // Move balloon down
+        balloon.y += balloon.speed;
+        balloon.element.style.top = balloon.y + 'px';
+        
+        // Check if balloon reached bottom
+        if (balloon.y > window.innerHeight) {
+            // Balloon missed - bad pop
+            playSound('badPop');
+            balloonsToRemove.push(index);
+            
+            // Decrease score
+            gameState.score = Math.max(0, gameState.score - 5);
+            scoreDisplay.textContent = gameState.score;
+        }
+    });
+    
+    // Remove balloons that are out of bounds (reverse order to avoid index issues)
+    for (let i = balloonsToRemove.length - 1; i >= 0; i--) {
+        const index = balloonsToRemove[i];
+        const balloon = gameState.balloonDrop.balloons[index];
+        balloon.element.remove();
+        gameState.balloonDrop.balloons.splice(index, 1);
+    }
+}
+
+function popBalloonDropBalloon(balloon) {
+    // Find balloon in array
+    const index = gameState.balloonDrop.balloons.findIndex(b => b.id === balloon.id);
+    if (index === -1) return;
+    
+    // Remove from array
+    const poppedBalloon = gameState.balloonDrop.balloons.splice(index, 1)[0];
+    
+    // Play good pop sound
+    playSound('goodPop');
+    
+    // Increase score
+    gameState.score += 10;
+    scoreDisplay.textContent = gameState.score;
+    
+    // Create fireworks at balloon position
+    createFireworks(poppedBalloon.x + poppedBalloon.width / 2, poppedBalloon.y + poppedBalloon.height / 2);
+    
+    // Remove balloon element
+    poppedBalloon.element.remove();
+}
+
+function checkBalloonDropCollisions() {
+    if (!gameState.handDetected || gameState.gameMode !== 'balloonDrop') return;
+    
+    gameState.balloonDrop.balloons.forEach(balloon => {
+        const rect = balloon.element.getBoundingClientRect();
+        
+        if (gameState.handX >= rect.left && 
+            gameState.handX <= rect.right && 
+            gameState.handY >= rect.top && 
+            gameState.handY <= rect.bottom) {
+            
+            popBalloonDropBalloon(balloon);
+        }
+    });
+}
+
+function endBalloonDropGame() {
+    gameState.isPlaying = false;
+    
+    // Remove instruction box
+    const instructionBox = document.querySelector('.balloon-drop-instructions');
+    if (instructionBox) {
+        instructionBox.remove();
+    }
+    
+    // Remove timer display
+    const timerDisplay = document.getElementById('timer');
+    if (timerDisplay) {
+        timerDisplay.remove();
+    }
+    
+    // Restore question box visibility
+    questionBox.style.display = 'block';
+    questionBox.style.background = '';
+    questionBox.style.color = '';
+    
+    const gameOver = document.createElement('div');
+    gameOver.className = 'game-over';
+    gameOver.innerHTML = `
+        <h2>🎉 Ballon Drop Afgelopen! 🎉</h2>
+        <p>Eindscore: ${gameState.score}</p>
+        <p>Je hebt ${gameState.balloonDrop.gameDuration / 1000} seconden volgehouden!</p>
+        <button class="start-btn" onclick="location.reload()">Nog een keer</button>
+    `;
+    document.body.appendChild(gameOver);
+}
 
 // Handle window resize
 window.addEventListener('resize', () => {
