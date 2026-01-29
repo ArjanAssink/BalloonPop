@@ -22,6 +22,9 @@ A fun interactive quiz game where you pop balloons with the correct answers usin
 - **Multiple Choice Quiz**: Answer questions by popping the correct balloon
 - **Animated UI**: Beautiful floating balloons, stars background, and smooth animations
 - **Responsive Design**: Works on mobile and desktop devices
+- **Fireworks Effects**: Spectacular fireworks when you get the right answer!
+- **Sound Effects**: Applause for correct answers, fart sounds for wrong answers
+- **Visual Feedback**: Colorful particle explosions and sound feedback
 
 ## How to Play
 
@@ -37,6 +40,9 @@ A fun interactive quiz game where you pop balloons with the correct answers usin
 - **CSS**: Modern CSS with variables, animations, and responsive design
 - **JavaScript**: ES6+ with async/await for camera access
 - **Browser Support**: Works best in Chrome, Edge, Firefox, and Safari (with camera permissions)
+- **Sound Effects**: Uses Web Audio API for dynamic sound generation
+- **Fireworks**: CSS-based particle system with physics simulation
+- **Performance**: Optimized animations with hardware acceleration
 
 ## Development
 

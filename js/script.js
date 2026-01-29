@@ -334,8 +334,8 @@ async function initializeHandTracking() {
             <p style="font-size: 14px; opacity: 0.9; margin-bottom: 15px;">
                 <strong>For iOS/Safari:</strong> Go to Settings → Safari → Camera and allow access
             </p>
-            <button class="start-btn" onclick="startGameTouchMode()" style="font-size: 18px; padding: 15px 40px;">
-                Play with Touch Instead
+            <button class="start-btn" onclick="location.reload()" style="font-size: 18px; padding: 15px 40px;">
+                Try Again
             </button>
         `;
         startScreen.appendChild(errorMsg);
@@ -343,12 +343,7 @@ async function initializeHandTracking() {
     }
 }
 
-// Touch/mouse mode fallback
-window.startGameTouchMode = function() {
-    const errorMsg = startScreen.querySelector('div[style*="rgba(244, 67, 54"]');
-    if (errorMsg) errorMsg.remove();
-    startGame(false); // false = touch mode
-}
+// Touch/mouse mode fallback (removed - always use gestures)
 
 function onHandResults(results) {
     ctx.save();
