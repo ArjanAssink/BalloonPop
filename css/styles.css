@@ -136,7 +136,39 @@ body {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Balloon */
+/* Timer display */
+.timer-display {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Balloon Drop Instructions */
+.balloon-drop-instructions {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 64, 122, 0.95);
+    color: white;
+    padding: 20px 40px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 24px;
+    text-align: center;
+    max-width: 80%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    pointer-events: none;
+    animation: slideDown 0.5s ease-out;
+}
+
+/* Balloon (Quiz Mode)*/
 .balloon {
     position: absolute;
     width: 100px;
@@ -146,6 +178,42 @@ body {
     transition: transform 0.2s;
     animation: float 3s ease-in-out infinite;
     z-index: 51;
+}
+
+/* Balloon Drop Mode */
+.balloon-drop {
+    position: absolute;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 51;
+    transition: transform 0.1s;
+    width: 80px;
+    height: 100px;
+}
+
+.balloon-drop:hover {
+    transform: scale(1.05);
+}
+
+.balloon-drop-body {
+    width: 100%;
+    height: 85%;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6),
+                0 0 30px rgba(255, 255, 255, 0.3),
+                inset 0 -20px 40px rgba(0, 0, 0, 0.2);
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.5));
+}
+
+.balloon-drop-string {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.5);
+    transform-origin: top;
 }
 
 .balloon:hover {
@@ -413,6 +481,17 @@ body {
     
     .balloon-text {
         font-size: 16px;
+    }
+    
+    .balloon-drop {
+        width: 60px;
+        height: 75px;
+    }
+    
+    .balloon-drop-instructions {
+        font-size: 18px;
+        padding: 15px 25px;
+        top: 20px;
     }
     
     .start-screen h1 {
