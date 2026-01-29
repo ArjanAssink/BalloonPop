@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a0533">
+    <title>Balloon Pop Quiz</title>
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkJhbGxvb24gUG9wIFF1aXoiLAogICJzaG9ydF9uYW1lIjogIkJhbGxvb25zIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMxYTA1MzMiLAogICJ0aGVtZV9jb2xvciI6ICIjMWEwNTMzIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJyUzRSUzQ2NpcmNsZSBjeD0nNTAnIGN5PSc1MCcgcj0nNDUnIGZpbGw9JyUyM2ZmNDA3YScvJTNFJTNDL3N2ZyUzRSIsCiAgICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJyUzRSUzQ2NpcmNsZSBjeD0nNTAnIGN5PSc1MCcgcj0nNDUnIGZpbGw9JyUyM2ZmNDA3YScvJTNFJTNDL3N2ZyUzRSIsCiAgICAgICJzaXplcyI6ICI1MTJ4NTEyIiwKICAgICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICAgIH0KICBdCn0=">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="start-screen" id="startScreen">
+        <h1>🎈 Balloon Pop Quiz 🎈</h1>
+        <p>Use hand gestures or touch to pop the correct balloon! Point at the right answer to win.</p>
+        <button class="start-btn" id="startBtn">Start with Gestures</button>
+        <button class="start-btn" onclick="startGameTouchMode()" style="background: var(--secondary); margin-top: 15px;">Play with Touch</button>
+        <div class="loading" id="loading" style="display: none;">
+            Loading camera and hand tracking<span class="spinner"></span>
+        </div>
+    </div>
+    
+    <div id="game-container" style="display: none;">
+        <video id="videoPreview" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+        
+        <div class="ui-overlay">
+            <div class="question-box" id="questionBox"></div>
+            <div class="score-display">Score: <span id="score">0</span></div>
+        </div>
+        
+        <div id="balloonsContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none;"></div>
+        <div class="hand-cursor" id="handCursor" style="display: none;"></div>
+    </div>
+    
+    <!-- MediaPipe Hand Tracking -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>
